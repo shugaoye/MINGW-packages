@@ -9,7 +9,8 @@ pkgdesc="P(ortable|ackageable) NaCl-based crypto library (mingw-w64)"
 arch=("any")
 url="https://github.com/jedisct1/libsodium"
 license=('custom:ISC')
-depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+#depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+makedepends=("mingw-w64-gcc")
 source=("https://download.libsodium.org/libsodium/releases/${_realname}-${pkgver}.tar.gz")
 sha256sums=('6f504490b342a4f8a4c4a02fc9b866cbef8622d5df4e5452b46be121e46636c1')
 
@@ -19,7 +20,7 @@ build() {
   ../${_realname}-${pkgver}/configure \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
-    --host=${MINGW_CHOST} \
+    --host=${CHOST} \
     --target=${MINGW_CHOST} \
     --enable-shared \
     --enable-static

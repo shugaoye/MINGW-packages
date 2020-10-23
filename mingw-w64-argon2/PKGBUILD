@@ -9,14 +9,15 @@ pkgdesc="This is the reference implementation of Argon2, the password-hashing fu
 arch=('any')
 license=('CC0 and Apache 2.0')
 url='https://github.com/P-H-C/phc-winner-argon2'
-makedepends=("${MINGW_PACKAGE_PREFIX}-gcc")
+#makedepends=("${MINGW_PACKAGE_PREFIX}-gcc")
+makedepends=("mingw-w64-gcc")
 source=(${_realname}-${pkgver}.tar.gz::"${url}/archive/${pkgver}.tar.gz"
         libargon2.pc
         001-mingw-fix-install.patch
         002-mingw-fix-src.patch)
 sha256sums=('daf972a89577f8772602bf2eb38b6a3dd3d922bf5724d45e7f9589b5e830442c'
             '17061b6f504640cec638d69404879a678e15332a4138673f4a8626ff4efc79a3'
-            '9b597bc9f83f1c8480c4dd129f5f1d39df6b290e3ede7f92083739ab8c57e749'
+            '782c7314909ec01fbbce2b8ad3bfb835879295a92ce01bd6f6789c7c3cb9aaa3'
             '5f0566bb2a1d9a039f667cc35bc0afa803e65863c01765a37c574165f1d8eac1')
 
 case ${MINGW_CHOST} in
@@ -48,12 +49,12 @@ build() {
   cp -rf ${srcdir}/phc-winner-argon2-${pkgver} "${srcdir}/build-${MINGW_CHOST}"
   cd "${srcdir}/build-${MINGW_CHOST}"
 
-  make CC=${MINGW_PREFIX}/bin/gcc AR=${MINGW_PREFIX}/bin/ar OPTTARGET=${_march}
+  make CC=${MINGW_PREFIX}/bin/${MINGW_CHOST}-gcc AR=${MINGW_PREFIX}/bin/${MINGW_CHOST}-ar OPTTARGET=${_march} KERNEL_NAME=MINGW
 }
 
 package() {
   cd "${srcdir}/build-${MINGW_CHOST}"
-  make install DESTDIR="${pkgdir}" CC=${MINGW_PREFIX}/bin/gcc AR=${MINGW_PREFIX}/bin/ar PREFIX="${MINGW_PREFIX}" OPTTARGET=${_march}
+  make install DESTDIR="${pkgdir}" CC=${MINGW_PREFIX}/bin/${MINGW_CHOST}-gcc AR=${MINGW_PREFIX}/bin/${MINGW_CHOST}-ar PREFIX="${MINGW_PREFIX}" OPTTARGET=${_march} KERNEL_NAME=MINGW
 
   install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
   install -Dm644 ${srcdir}/libargon2.pc "${pkgdir}${MINGW_PREFIX}/lib/pkgconfig/libargon2.pc"

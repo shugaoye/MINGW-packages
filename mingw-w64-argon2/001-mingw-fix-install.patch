@@ -1,5 +1,5 @@
---- phc-winner-argon2-20190702/Makefile.orig	2019-05-20 12:18:00.000000000 +0300
-+++ phc-winner-argon2-20190702/Makefile	2019-07-03 08:38:14.045372200 +0300
+--- phc-winner-argon2-20190702/Makefile.orig	2019-05-20 17:18:00.000000000 +0800
++++ phc-winner-argon2-20190702/Makefile	2020-10-22 11:48:13.742951240 +0800
 @@ -36,6 +36,12 @@
  SRC_BENCH = src/bench.c
  SRC_GENKAT = src/genkat.c
@@ -47,7 +47,7 @@
  	PC_EXTRA_LIBS ?= -lrt -ldl
  endif
  ifeq ($(KERNEL_NAME), $(filter $(KERNEL_NAME),DragonFly FreeBSD NetBSD OpenBSD))
-@@ -84,21 +101,27 @@
+@@ -84,23 +101,32 @@
  ifeq ($(KERNEL_NAME), Darwin)
  	LIB_EXT := $(ABI_VERSION).dylib
  	LIB_CFLAGS := -dynamiclib -install_name @rpath/lib$(LIB_NAME).$(LIB_EXT)
@@ -61,6 +61,7 @@
 +	LIB_SH_RT := cyg$(LIB_NAME).$(LIB_EXT)
  	LIB_CFLAGS := -shared -Wl,--out-implib,lib$(LIB_NAME).$(LIB_EXT).a
  	PC_EXTRA_LIBS ?=
++	RUN=argon2.exe
  endif
  ifeq ($(findstring MINGW, $(KERNEL_NAME)), MINGW)
  	LIB_EXT := dll
@@ -68,6 +69,7 @@
 +	LIB_SH_RT := lib$(LIB_NAME).$(LIB_EXT)
  	LIB_CFLAGS := -shared -Wl,--out-implib,lib$(LIB_NAME).$(LIB_EXT).a
  	PC_EXTRA_LIBS ?=
++	RUN=argon2.exe
  endif
  ifeq ($(findstring MSYS, $(KERNEL_NAME)), MSYS)
  	LIB_EXT := dll
@@ -75,8 +77,11 @@
 +	LIB_SH_RT := msys-$(LIB_NAME).$(LIB_EXT)
  	LIB_CFLAGS := -shared -Wl,--out-implib,lib$(LIB_NAME).$(LIB_EXT).a
  	PC_EXTRA_LIBS ?=
++	RUN=argon2.exe
  endif
-@@ -116,11 +139,15 @@
+ ifeq ($(KERNEL_NAME), SunOS)
+ 	CC := gcc
+@@ -116,11 +142,15 @@
  endif
  endif
  
@@ -94,7 +99,7 @@
  endif
  
  
-@@ -178,21 +205,28 @@
+@@ -178,21 +208,28 @@
  $(GENKAT):      $(SRC) $(SRC_GENKAT)
  		$(CC) $(CFLAGS) $^ -o $@ -DGENKAT
  
@@ -131,7 +136,7 @@
  
  
  # all substitutions to pc template
-@@ -211,7 +245,7 @@
+@@ -211,7 +248,7 @@
  .PHONY: dist
  dist:
  		cd ..; \
@@ -140,7 +145,7 @@
  
  .PHONY: test
  test:           $(SRC) src/test.c
-@@ -237,17 +271,28 @@
+@@ -237,17 +274,28 @@
  	$(INSTALL) -m 0644 $(HEADERS) $(INST_INCLUDE)
  	$(INSTALL) -d $(INST_LIBRARY)
  	$(INSTALL) -m 0644 $(LIBRARIES) $(INST_LIBRARY)
