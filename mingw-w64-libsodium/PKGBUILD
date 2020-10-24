@@ -2,7 +2,7 @@
 
 _realname=libsodium
 pkgbase=mingw-w64-${_realname}
-pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgname="${MINGW_ARCH_PACKAGE_PREFIX}-${_realname}"
 pkgver=1.0.18
 pkgrel=1
 pkgdesc="P(ortable|ackageable) NaCl-based crypto library (mingw-w64)"
@@ -10,22 +10,41 @@ arch=("any")
 url="https://github.com/jedisct1/libsodium"
 license=('custom:ISC')
 #depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
-makedepends=("mingw-w64-gcc")
+makedepends=("${MINGW_ARCH_PACKAGE_PREFIX}-gcc")
 source=("https://download.libsodium.org/libsodium/releases/${_realname}-${pkgver}.tar.gz")
 sha256sums=('6f504490b342a4f8a4c4a02fc9b866cbef8622d5df4e5452b46be121e46636c1')
 
-build() {
-  [[ -d "${srcdir}/build-${MINGW_CHOST}" ]] && rm -rf "${srcdir}/build-${MINGW_CHOST}"
-  mkdir -p "${srcdir}/build-${MINGW_CHOST}" && cd "${srcdir}/build-${MINGW_CHOST}"
-  ../${_realname}-${pkgver}/configure \
-    --prefix=${MINGW_PREFIX} \
-    --build=${MINGW_CHOST} \
-    --host=${CHOST} \
-    --target=${MINGW_CHOST} \
-    --enable-shared \
-    --enable-static
+_architectures="i686-w64-mingw32 x86_64-w64-mingw32"
 
-  make
+_march=""
+get_march() {
+	case $1 in
+		i686*)
+			_march=i686
+			;;
+		x86_64*)
+			_march=x86-64
+			;;
+	esac
+}
+
+build() {
+  for _arch in ${_architectures}; do
+    get_march ${_arch}
+
+    [[ -d "${srcdir}/build-${_arch}" ]] && rm -rf "${srcdir}/build-${_arch}"
+    mkdir -p "${srcdir}/build-${_arch}" && pushd "${srcdir}/build-${_arch}"
+    ../${_realname}-${pkgver}/configure \
+      --prefix=${MINGW_PREFIX}/${_arch} \
+      --build=${_arch} \
+      --host=${CHOST} \
+      --target=${_arch} \
+      --enable-shared \
+      --enable-static
+
+    make
+    popd
+  done
 }
 
 check() {
@@ -34,7 +53,10 @@ check() {
 }
 
 package() {
-  cd ${srcdir}/build-${MINGW_CHOST}
-  make DESTDIR="${pkgdir}" install
-  install -Dm644 ${srcdir}/${_realname}-${pkgver}/LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+  for _arch in ${_architectures}; do
+    get_march ${_arch}
+    cd ${srcdir}/build-${_arch}
+    make DESTDIR="${pkgdir}" install
+    install -Dm644 ${srcdir}/${_realname}-${pkgver}/LICENSE "${pkgdir}${MINGW_PREFIX}/${_arch}/share/licenses/${_realname}/LICENSE"
+  done
 }
